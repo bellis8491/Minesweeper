@@ -1,9 +1,8 @@
 import Tile.Board;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.TimerTask;
-import javax.swing.*;
-import java.util.*;
 
 public class Main extends JFrame {
     static JFrame frame;
@@ -20,20 +19,7 @@ public class Main extends JFrame {
     public static JButton expert = new JButton("Expert");
     public static JButton custom = new JButton("Custom");
     public static JLabel[] tms = new JLabel[]{new JLabel(new ImageIcon("src\\sprites\\counter\\blank.png")), new JLabel(new ImageIcon("src\\sprites\\counter\\blank.png")), new JLabel(new ImageIcon("src\\sprites\\counter\\blank.png"))};
-    public final static TimerTask t = new TimerTask() {
-        @Override
-        public void run() {
-            if (Board.gameOver || time > 999)
-            {
-                t.cancel();
-                return;
-            }
-            tms[0].setIcon(new ImageIcon("src\\sprites\\counter\\"+(time >= 100? time/100 : "blank")+".png"));
-            tms[1].setIcon(new ImageIcon("src\\sprites\\counter\\"+(time >= 10? time%100/10 : "blank")+".png"));
-            tms[2].setIcon(new ImageIcon("src\\sprites\\counter\\"+(time >= 0? time%10 : "blank")+".png"));
-            time++;
-        }
-    };
+    public static TimerTask t;
 
     public Main() {
     }
@@ -41,8 +27,8 @@ public class Main extends JFrame {
     public static void main(String[] args) {
         frame = new JFrame("Minesweeper");
         frame.setLayout(new BorderLayout());
-        frame.setLocationRelativeTo((Component) null);
-        frame.setDefaultCloseOperation(3);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
 
         //Start Panel
@@ -92,13 +78,19 @@ public class Main extends JFrame {
     public static void startGame() {
         start.setSize(width * 33, 64);
         frame.setSize(width * 32, height * 32 + 96);
+        try {t.cancel();} catch (Exception ignored){}
+        t = new TimerTask() {
+            @Override
+            public void run() {
+                countTimer();
+            }
+        };
         Board.newBoard(width, height, mines, stButton, t);
         time = 0;
         try {
             Board.timer.cancel();
+        } catch (Exception ignored) {
         }
-        catch (Exception E)
-        {}
     }
 
 
@@ -108,32 +100,30 @@ public class Main extends JFrame {
         button.addActionListener((var1x) -> {
             dif = difficulty;
             switch (dif) {
-                case 0:
+                case 0 -> {
                     width = 9;
                     height = 9;
                     mines = 10;
-                    break;
-                case 1:
+                }
+                case 1 -> {
                     width = 16;
                     height = 16;
                     mines = 40;
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     width = 30;
                     height = 16;
                     mines = 99;
-                    break;
-                default:
+                }
+                default -> {
                     System.out.println("default");
                     JFrame custom = new JFrame("Custom Size");
                     custom.setSize(100, 300);
                     custom.setLocationRelativeTo(frame);
                     custom.setResizable(false);
                     custom.setLayout(new BorderLayout());
-
                     JPanel inputs = new JPanel();
                     inputs.setLayout(new GridLayout(3, 2));
-
                     JTextField wthIn = new JTextField();
                     JTextField hgtIn = new JTextField();
                     JTextField mnsIn = new JTextField();
@@ -144,7 +134,6 @@ public class Main extends JFrame {
                     inputs.add(new JLabel("Mines:"));
                     inputs.add(mnsIn);
                     custom.add(inputs, BorderLayout.CENTER);
-
                     JButton submit = new JButton("Submit");
                     submit.addActionListener(e -> {
                         try {
@@ -154,17 +143,28 @@ public class Main extends JFrame {
                             height = Math.clamp(height, 5, 40);
                             mines = Integer.parseInt(mnsIn.getText());
                             mines = Math.clamp(mines, 1, Math.min(99, width * height - 1));
-                        } catch (Exception E) {
+                        } catch (Exception ignored) {
                         }
 
                         custom.dispose();
                     });
-
                     custom.add(submit, BorderLayout.PAGE_END);
-
                     custom.setVisible(true);
+                }
             }
 
         });
+    }
+
+    public static void countTimer() {
+        System.out.println("timer");
+        if (Board.gameOver || time > 999) {
+            t.cancel();
+            return;
+        }
+        tms[0].setIcon(new ImageIcon("src\\sprites\\counter\\" + (time >= 100 ? time / 100 : "blank") + ".png"));
+        tms[1].setIcon(new ImageIcon("src\\sprites\\counter\\" + (time >= 10 ? time % 100 / 10 : "blank") + ".png"));
+        tms[2].setIcon(new ImageIcon("src\\sprites\\counter\\" + (time >= 0 ? time % 10 : "blank") + ".png"));
+        time++;
     }
 }

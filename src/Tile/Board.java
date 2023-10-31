@@ -14,7 +14,7 @@ public class Board extends JFrame {
     public static int width, height, mines, left;
     public static boolean gameOver, started;
     public static Timer timer = new Timer();
-    public static TimerTask task;
+    public static TimerTask taskTemp, task;
 
     public static void newBoard(int width, int height, int mines, JButton stButton, TimerTask task) {
         System.out.println("New Board");
@@ -23,7 +23,14 @@ public class Board extends JFrame {
         Board.mines = mines;
         Board.stButton = stButton;
         gameOver = false;
-        Board.task = task;
+        started = false;
+        try {
+            timer.cancel();
+            timer.purge();
+        } catch (IllegalStateException ignored) {
+        }
+        task.cancel();
+        Board.taskTemp = task;
         frame.removeAll();
         frame.setLayout(new GridLayout(height, width, 1, 1));
         frame.setBackground(new Color(Integer.parseInt("626262", 16)));
@@ -54,7 +61,6 @@ public class Board extends JFrame {
 
 
         mineCountera.setIcon(new ImageIcon("src\\sprites\\counter\\" + (mines >= 10 ? mines / 10 : "blank") + ".png"));
-        ;
         mineCounterb.setIcon(new ImageIcon("src\\sprites\\counter\\" + (mines % 10) + ".png"));
 
         frame.setVisible(true);
@@ -65,6 +71,13 @@ public class Board extends JFrame {
         if (left == 0) {
             stButton.setIcon(new ImageIcon("src\\sprites\\win.png"));
             gameOver = true;
+
+            try {
+                timer.cancel();
+                timer.purge();
+                task.cancel();
+            }
+            catch (NullPointerException ignore){}
         }
         //System.out.println(left);
     }
@@ -98,11 +111,32 @@ public class Board extends JFrame {
         }
         stButton.setIcon(new ImageIcon("src\\sprites\\end.png"));
         started = false;
+
+        try {
+            timer.cancel();
+            timer.purge();
+            task.cancel();
+        }
+        catch (NullPointerException ignore){}
     }
 
     public static void timer() {
         if (started) return;
         started = true;
+        System.out.println("Start timer");
+        try {
+            timer.cancel();
+            timer.purge();
+            task.cancel();
+        }
+        catch (NullPointerException ignore){}
+        timer = new Timer("Timer");
+        task = new TimerTask() {
+            @Override
+            public void run() {
+                taskTemp.run();
+            }
+        };
         timer.scheduleAtFixedRate(task, 0, 1000);
     }
 

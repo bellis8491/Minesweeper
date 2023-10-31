@@ -2,8 +2,6 @@ package Tile;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -12,11 +10,6 @@ public class Tile extends Board {
     public JButton button;
 
     public boolean mine, flagged, clicked;
-    static public int mines = 0;
-
-    public Tile() {
-        this(0, 0);
-    }
 
     private MouseListener ml;
 
@@ -59,26 +52,28 @@ public class Tile extends Board {
         if(mine) {
             Board.gameOver();
             button.setIcon(new ImageIcon("src\\sprites\\exploded.png"));
-            button.setDisabledIcon(button.getIcon());
-            button.setEnabled(false);
         }
         else
         {
             if(surroundingMines == 0)
             {
-                for (int i = x-1; i <= x+1; i++) {
-                    if(i < 0) continue;
-                    if(i >= height) continue;
-                    for (int j = y-1; j <= y+1; j++) {
-                        if(j < 0) continue;
-                        if(j >= width) continue;
-                        board[i][j].click();
-                    }
-                }
+                clickSurrounding();
             }
             button.setIcon(new ImageIcon("src\\sprites\\"+surroundingMines+".png"));
-            button.setDisabledIcon(button.getIcon());
-            button.setEnabled(false);
+        }
+        button.setDisabledIcon(button.getIcon());
+        button.setEnabled(false);
+    }
+
+    private void clickSurrounding() {
+        for (int i = x-1; i <= x+1; i++) {
+            if(i < 0) continue;
+            if(i >= height) continue;
+            for (int j = y-1; j <= y+1; j++) {
+                if(j < 0) continue;
+                if(j >= width) continue;
+                board[i][j].click();
+            }
         }
     }
 
@@ -93,15 +88,7 @@ public class Tile extends Board {
             public void mousePressed(MouseEvent event) {
                 if(event.getButton() == MouseEvent.BUTTON2 && !gameOver && surroundingMines==surroundingFlags)
                 {
-                    for (int i = x-1; i <= x+1; i++) {
-                        if(i < 0) continue;
-                        if(i >= height) continue;
-                        for (int j = y-1; j <= y+1; j++) {
-                            if(j < 0) continue;
-                            if(j >= width) continue;
-                            board[i][j].click();
-                        }
-                    }
+                    clickSurrounding();
                 }
                 if(!button.isEnabled() || gameOver) return;
                 if (event.getButton() == MouseEvent.BUTTON1) {
